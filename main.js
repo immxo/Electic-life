@@ -7,11 +7,6 @@ let Grid = function(x,y){
     this.y = y;
 }
 
-let Herbivore = function(){
-    this.hp = 100;
-    this.energy = 100;
-}
-
 Grid.prototype.generate = function(){
     let plan = [];
     let y = this.y;
@@ -88,10 +83,96 @@ Grid.prototype.stones = function(array){
     return array;
 }
 
-Grid.prototype.generateHerbivore = function(count){
-    for(let i = 0; i < count; i++){
-        
+Grid.prototype.generateHerbivores = function(count, array){
+    let y = this.y;
+    let x = this.x;
+    let randomY;
+    let randomX;
+    let i = 0;
+
+    while(i < count){
+        randomY = getRandomInt(1, y-1);
+        randomX = getRandomInt(1, x-1);
+        if(array[randomY][randomX] === ' '){
+            array[randomY][randomX] = 'O';
+        }
+        i++;
     }
+    return array;
+}
+
+Grid.prototype.generatePredators = function(count, array){
+    let y = this.y;
+    let x = this.x;
+    let randomY;
+    let randomX;
+    let i = 0;
+
+    while(i < count){
+        randomY = getRandomInt(1, y-1);
+        randomX = getRandomInt(1, x-1);
+        if(array[randomY][randomX] === ' '){
+            array[randomY][randomX] = 'P';
+        }
+        i++;
+    }
+    return array;
+}
+
+Grid.prototype.generateWeed = function(array){
+    let y = this.y;
+    let x = this.x;
+    let randomY;
+    let randomX;
+    let i = 0;
+
+    while(i < y){
+        randomY = getRandomInt(1, y-1);
+        randomX = getRandomInt(1, x-1);
+        if(array[randomY][randomX] === ' '){
+            array[randomY][randomX] = '*';
+        }
+        i++;
+    }
+    return array;
+}
+
+Grid.prototype.haveTurn = function(array){
+    let y = this.y;
+    let x = this.x;
+    let haveTurn = [];
+
+    for(let i = 0; i < y; i++){
+        for(let j = 0; j < x; j++){
+            if(array[i][j] === 'O'){
+                haveTurn.push({
+                    type: 'O',
+                    y: i,
+                    x: j
+                });
+            }
+            else if(array[i][j] === 'P'){
+                haveTurn.push({
+                    type: 'P',
+                    y: i,
+                    x: j
+                });
+            }
+        }
+    }
+    return haveTurn
+}
+
+function direction(){
+    
+}
+
+Grid.prototype.turn = function(arrayHaveTurn, array){
+    arrayHaveTurn.forEach(function(unit){
+        array[unit.y][unit.x] = ' ';
+        array[unit.y][unit.x+1] = unit.type;
+    });
+    return array;
 }
 
 Grid.prototype.string = function (array) {
@@ -116,5 +197,16 @@ Grid.prototype.string = function (array) {
 
 let grid = new Grid(60,30);
 let root = document.getElementById('root');
-let data = grid.string(grid.stones(grid.generate()));
+
+let gridDone = grid.generateWeed(grid.generatePredators(10 ,grid.generateHerbivores(10,grid.stones(grid.generate()))));
+console.log(grid.haveTurn(gridDone));
+let data = grid.string(gridDone);
 root.innerHTML = data;
+
+function turn(){
+   let data = grid.string(grid.turn(grid.haveTurn(gridDone), gridDone));
+   root.innerHTML = data;
+    setTimeout(turn, 2000);
+}
+
+setTimeout(turn, 2000);
