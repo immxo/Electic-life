@@ -95,8 +95,8 @@ Grid.prototype.generateHerbivores = function(count, array){
         randomX = getRandomInt(1, x-1);
         if(array[randomY][randomX] === ' '){
             array[randomY][randomX] = 'O';
+            i++;
         }
-        i++;
     }
     return array;
 }
@@ -113,8 +113,8 @@ Grid.prototype.generatePredators = function(count, array){
         randomX = getRandomInt(1, x-1);
         if(array[randomY][randomX] === ' '){
             array[randomY][randomX] = 'P';
+            i++;
         }
-        i++;
     }
     return array;
 }
@@ -163,14 +163,80 @@ Grid.prototype.haveTurn = function(array){
     return haveTurn
 }
 
-function direction(){
-    
+function look(arrayHaveTurn,array){
+    let nearEat = [];
+    let nearSpaces = [];
+    if(arrayHaveTurn.type === 'O') {
+        for (let i = -1; i < 2; i++) {
+            for (let j = -1; j < 2; j++) {
+                if (array[arrayHaveTurn.y + i][arrayHaveTurn.x + j] === '*') {
+                    nearEat.push({
+                        type: arrayHaveTurn.type,
+                        x: j,
+                        y: i
+                    });
+                }
+                else if(array[arrayHaveTurn.y + i][arrayHaveTurn.x + j] === ' '){
+                    nearSpaces.push({
+                        type: arrayHaveTurn.type,
+                        x: j,
+                        y: i
+                    });
+                }
+            }
+        }
+
+        if(nearEat.length === 1){
+            return nearEat[0];
+        }
+        else if(nearEat.length < 1){
+            return nearSpaces[getRandomInt(0, nearSpaces.length - 1)];
+        }
+        else{
+            return nearEat[getRandomInt(0, nearEat.length - 1)];
+        }
+
+    }
+
+    else if(arrayHaveTurn.type === 'P') {
+        for (let i = -1; i < 2; i++) {
+            for (let j = -1; j < 2; j++) {
+                if (array[arrayHaveTurn.y + i][arrayHaveTurn.x + j] === 'O') {
+                    nearEat.push({
+                        type: arrayHaveTurn.type,
+                        x: j,
+                        y: i
+                    });
+                }
+                else if(array[arrayHaveTurn.y + i][arrayHaveTurn.x + j] === ' '){
+                    nearSpaces.push({
+                        type: arrayHaveTurn.type,
+                        x: j,
+                        y: i
+                    });
+                }
+            }
+        }
+
+        if(nearEat.length === 1){
+            return nearEat[0];
+        }
+        else if(nearEat.length < 1){
+            return nearSpaces[getRandomInt(0, nearSpaces.length - 1)];
+        }
+        else{
+            return nearEat[getRandomInt(0, nearEat.length - 1)];
+        }
+
+    }
 }
 
 Grid.prototype.turn = function(arrayHaveTurn, array){
-    arrayHaveTurn.forEach(function(unit){
+    let offset;
+    arrayHaveTurn.forEach(function(unit, i){
+        offset = look(arrayHaveTurn[i], array);
         array[unit.y][unit.x] = ' ';
-        array[unit.y][unit.x+1] = unit.type;
+        array[unit.y + offset.y][unit.x + offset.x] = unit.type;
     });
     return array;
 }
@@ -198,7 +264,7 @@ Grid.prototype.string = function (array) {
 let grid = new Grid(60,30);
 let root = document.getElementById('root');
 
-let gridDone = grid.generateWeed(grid.generatePredators(10 ,grid.generateHerbivores(10,grid.stones(grid.generate()))));
+let gridDone = grid.generateWeed(grid.generatePredators(10 ,grid.generateHerbivores(10 ,grid.stones(grid.generate()))));
 console.log(grid.haveTurn(gridDone));
 let data = grid.string(gridDone);
 root.innerHTML = data;
@@ -206,7 +272,6 @@ root.innerHTML = data;
 function turn(){
    let data = grid.string(grid.turn(grid.haveTurn(gridDone), gridDone));
    root.innerHTML = data;
-    setTimeout(turn, 2000);
 }
 
-setTimeout(turn, 2000);
+setInterval(turn, 1000);
